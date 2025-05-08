@@ -1,6 +1,6 @@
+const cardTemplate = document.querySelector('#card-template').content;
 
 function createCard(cardData, deleteCallback) {
-    const cardTemplate = document.querySelector('#card-template').content;
     const card = cardTemplate.querySelector('.card').cloneNode(true);
 
     const cardImage = card.querySelector('.card__image');
@@ -8,6 +8,7 @@ function createCard(cardData, deleteCallback) {
     const cardTitle = card.querySelector('.card__title');
 
     cardImage.src = cardData.link;
+    cardImage.alt = cardData.name;
     cardTitle.textContent = cardData.name;
     
     cardDeleteButton.addEventListener('click', () => {
