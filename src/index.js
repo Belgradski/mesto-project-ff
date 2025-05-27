@@ -1,59 +1,53 @@
-import './index.css';
+import "./index.css";
+import {
+  initialCards,
+  createCard,
+  deleteButton,
+  cardTemplate,
+  placesList,
+  addCard,
+  formElementNewPlace,
+  renderCard,
+} from "./components/cards";
+import {
+  openModal,
+  closeModal,
+  handleFormSubmit,
+  jobInput,
+  nameInput,
+  formElementEditProfile,
+} from "./components/modal.js";
 
-const initialCards = [
-    {
-      name: "Архыз",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg",
-    },
-    {
-      name: "Челябинская область",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg",
-    },
-    {
-      name: "Иваново",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg",
-    },
-    {
-      name: "Камчатка",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg",
-    },
-    {
-      name: "Холмогорский район",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg",
-    },
-    {
-      name: "Байкал",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg",
+const profileEditButton = document.querySelector(".profile__edit-button");
+const popupTypeEdit = document.querySelector(".popup_type_edit");
+const profileAddButton = document.querySelector(".profile__add-button");
+const popupTypeNewCard = document.querySelector(".popup_type_new-card");
+
+formElementEditProfile.name.value = nameInput.textContent;
+formElementEditProfile.description.value = jobInput.textContent;
+
+document.addEventListener("DOMContentLoaded", renderCard);
+
+profileEditButton.addEventListener("click", () => {
+  openModal(popupTypeEdit);
+});
+
+profileAddButton.addEventListener("click", () => {
+  openModal(popupTypeNewCard);
+});
+
+document.querySelectorAll(".popup__close").forEach((closeButton) => {
+  closeButton.addEventListener("click", closeModal);
+});
+
+document.querySelectorAll(".popup").forEach((popup) => {
+  popup.addEventListener("click", (evt) => {
+    if (evt.target === popup) {
+      closeModal();
     }
-];
+  });
+});
 
-const cardTemplate = document.querySelector('#card-template').content;
-const placesList = document.querySelector('.places__list');
+formElementEditProfile.addEventListener("submit", handleFormSubmit);
 
-function createCard(cardData, deleteCallback) {
-    const card = cardTemplate.querySelector('.card').cloneNode(true);
-    const cardImage = card.querySelector('.card__image');
-    const cardTitle = card.querySelector('.card__title');
-    const cardDeleteButton = card.querySelector('.card__delete-button');
-
-    cardImage.src = cardData.link;
-    cardImage.alt = cardData.name;
-    cardTitle.textContent = cardData.name;
-    
-    cardDeleteButton.addEventListener('click', () => {
-        deleteCallback(card);
-    });
-
-    return card;
-}
-
-function deleteButton(card) {
-    card.remove();
-}
-
-initialCards.forEach((cardData) => {
-    const cardArray = createCard(cardData, deleteButton);
-    placesList.append(cardArray);
-})
-
-
+formElementNewPlace.addEventListener("submit", addCard);
