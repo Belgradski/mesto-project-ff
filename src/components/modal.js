@@ -18,4 +18,3 @@ function closeByEscape(evt) {
 }
 
 export { openModal, closeModal };
-A
