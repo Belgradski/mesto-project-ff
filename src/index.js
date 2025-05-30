@@ -14,8 +14,12 @@ document.querySelectorAll(".popup").forEach((popup) => {
 
 const placesList = document.querySelector(".places__list");
 
-let nameInput = document.querySelector(".profile__title");
-let jobInput = document.querySelector(".profile__description");
+const nameInput = document.querySelector(".profile__title");
+const jobInput = document.querySelector(".profile__description");
+
+const imagePopup = document.querySelector(".popup_type_image");
+const popupImage = imagePopup.querySelector(".popup__image");
+const popupCaption = imagePopup.querySelector(".popup__caption");
 
 const formElementEditProfile = document.forms["edit-profile"];
 const formElementNewPlace = document.forms["new-place"];
@@ -73,10 +77,6 @@ function addCard(evt) {
 }
 
 function openCardImage(cardData) {
-  const imagePopup = document.querySelector(".popup_type_image");
-  const popupImage = imagePopup.querySelector(".popup__image");
-  const popupCaption = imagePopup.querySelector(".popup__caption");
-
   popupImage.src = cardData.link;
   popupImage.alt = cardData.name;
   popupCaption.textContent = cardData.name;

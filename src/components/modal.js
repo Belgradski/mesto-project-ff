@@ -7,7 +7,7 @@ function closeModal() {
   document
     .querySelector(".popup_is-opened")
     .classList.remove("popup_is-opened");
-  removeEventListener("keydown", closeByEscape);
+  document.removeEventListener("keydown", closeByEscape);
 }
 
 function closeByEscape(evt) {
