@@ -1,1 +1,1 @@
-https://github.com/Belgradski/mesto-project-ff.git
+https://belgradski.github.io/mesto-project-ff/
