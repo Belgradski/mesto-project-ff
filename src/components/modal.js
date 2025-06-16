@@ -1,13 +1,25 @@
+import { clearValidation, validationConfig } from "./validation";
+
+
+function resetForm(formElement) {
+  formElement.resetForm();
+}
+
+
 function openModal(modal) {
   modal.classList.add("popup_is-opened");
   document.addEventListener("keydown", closeByEscape);
 }
 
 function closeModal() {
-  document
-    .querySelector(".popup_is-opened")
-    .classList.remove("popup_is-opened");
+  const openModal = document.querySelector(".popup_is-opened");
   document.removeEventListener("keydown", closeByEscape);
+  const resetForm = openModal.querySelector('.popup__form');
+  if (resetForm) {
+    resetForm.reset();
+    
+  }
+  openModal.classList.remove("popup_is-opened");
 }
 
 function closeByEscape(evt) {
@@ -17,4 +29,4 @@ function closeByEscape(evt) {
   }
 }
 
-export { openModal, closeModal };
+export { openModal, closeModal, resetForm };

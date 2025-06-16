@@ -1,7 +1,8 @@
 import "./index.css";
 import { initialCards } from "./components/cards.js";
 import { createCard, deleteCard, addLike } from "./components/card.js";
-import { openModal, closeModal } from "./components/modal.js";
+import { openModal, closeModal, resetForm } from "./components/modal.js";
+import { enableValidation, clearValidation, validationConfig } from "./components/validation.js";
 
 const profileEditButton = document.querySelector(".profile__edit-button");
 const popupTypeEdit = document.querySelector(".popup_type_edit");
@@ -24,6 +25,7 @@ const popupCaption = imagePopup.querySelector(".popup__caption");
 const formElementEditProfile = document.forms["edit-profile"];
 const formElementNewPlace = document.forms["new-place"];
 
+
 document.addEventListener("DOMContentLoaded", () => {
   renderCard(initialCards, placesList);
 });
@@ -31,10 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
 profileEditButton.addEventListener("click", () => {
   formElementEditProfile.name.value = nameInput.textContent;
   formElementEditProfile.description.value = jobInput.textContent;
+  clearValidation(formElementEditProfile, validationConfig);
   openModal(popupTypeEdit);
 });
 
 profileAddButton.addEventListener("click", () => {
+  clearValidation(formElementNewPlace, validationConfig);
   openModal(popupTypeNewCard);
 });
 
@@ -58,6 +62,7 @@ formElementEditProfile.addEventListener("submit", (evt) => {
 });
 
 formElementNewPlace.addEventListener("submit", (evt) => {
+  
   addCard(evt);
 });
 
@@ -90,3 +95,7 @@ function renderCard(initialCards, placesList) {
     placesList.append(cardArray);
   });
 }
+
+enableValidation(validationConfig);
+// --------------------------------Валидация-------------------------------- //
+
