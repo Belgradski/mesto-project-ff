@@ -1,6 +1,10 @@
 import "./index.css";
-import { initialCards } from "./components/cards.js";
-import { createCard, deleteCard, addLike, setUserId } from "./components/card.js";
+import {
+  createCard,
+  deleteCard,
+  addLike,
+  setUserId,
+} from "./components/card.js";
 import { openModal, closeModal, resetForm } from "./components/modal.js";
 import {
   enableValidation,
@@ -8,28 +12,59 @@ import {
   validationConfig,
 } from "./components/validation.js";
 import { data } from "autoprefixer";
+import {
+  apiConfig,
+  checkResponse,
+  getUserInfoApi,
+  getInitialCardsApi,
+  setUserInfoApi,
+} from "./components/api.js";
 
 const profileEditButton = document.querySelector(".profile__edit-button");
 const popupTypeEdit = document.querySelector(".popup_type_edit");
 const profileAddButton = document.querySelector(".profile__add-button");
 const popupTypeNewCard = document.querySelector(".popup_type_new-card");
-
-
+const profileImage = document.querySelector(".profile__image");
+const popupTypeAvatar = document.querySelector(".popup_type_avatar");
 const placesList = document.querySelector(".places__list");
-
 const nameInput = document.querySelector(".profile__title");
 const jobInput = document.querySelector(".profile__description");
-const avatar = document.querySelector(".profile__image");
-
+const avatar = document.querySelector(".profile__avatar");
 const imagePopup = document.querySelector(".popup_type_image");
 const popupImage = imagePopup.querySelector(".popup__image");
 const popupCaption = imagePopup.querySelector(".popup__caption");
-
 const formElementEditProfile = document.forms["edit-profile"];
 const formElementNewPlace = document.forms["new-place"];
+const formElementAvatarEdit = document.forms["avatar-edit"];
+
+let userId;
+
+export const updateProfile = (data) => {
+  if (nameInput) nameInput.textContent = data.name;
+  if (jobInput) jobInput.textContent = data.about;
+  if (avatar.src) avatar.src = data.avatar;
+  if (avatar.alt) avatar.alt = data.name;
+};
+
+
+Promise.all([getUserInfoApi(), getInitialCardsApi()])
+  .then(([userData, cardsData]) => {
+    userId = userData._id;
+    setUserId(userId);
+    renderCard(cardsData, placesList);
+  })
+  .catch((error) => {
+    console.error("Ошибка при загрузке данных", error);
+  });
+
 
 document.querySelectorAll(".popup").forEach((popup) => {
   popup.classList.add("popup_is-animated");
+});
+
+profileImage.addEventListener("click", () => {
+  clearValidation(formElementAvatarEdit, validationConfig);
+  openModal(popupTypeAvatar);
 });
 
 profileEditButton.addEventListener("click", () => {
@@ -58,17 +93,23 @@ document.querySelectorAll(".popup").forEach((popup) => {
 
 formElementEditProfile.addEventListener("submit", (evt) => {
   evt.preventDefault();
+  const submitButton = formElementEditProfile.querySelector(".button__submit");
+  const initialText = submitButton.textContent;
+  submitButton.textContent = "Сохранение...";
   const name = formElementEditProfile.name.value;
   const about = formElementEditProfile.description.value;
   setUserInfoApi(name, about)
-  .then((updateData) => {
-    updateProfile(updateData);
-    console.log('данные обновлены', updateData);
-    closeModal();
-  })
-  .catch((error) => {
-    console.error('ошибка', error);
-  })
+    .then((updateData) => {
+      updateProfile(updateData);
+      console.log("данные обновлены", updateData);
+      closeModal();
+    })
+    .catch((error) => {
+      console.error("ошибка", error);
+    })
+    .finally(() => {
+      submitButton.textContent = initialText;
+    });
   getUserInfoApi();
 });
 
@@ -76,35 +117,71 @@ formElementNewPlace.addEventListener("submit", (evt) => {
   addCard(evt);
 });
 
+formElementAvatarEdit.addEventListener("submit", (evt) => {
+  updateAvatar(evt);
+});
+
 function addCard(evt) {
   evt.preventDefault();
+  const submitButton = formElementNewPlace.querySelector(".button__submit");
+  const initialText = submitButton.textContent;
+  submitButton.textContent = "Создание...";
+
   const cardPlaceName = formElementNewPlace.elements["place-name"].value;
   const cardLink = formElementNewPlace.elements["link"].value;
   fetch(`${apiConfig.url}/cards`, {
-    method: 'POST',
+    method: "POST",
     headers: apiConfig.headers,
     body: JSON.stringify({
       name: cardPlaceName,
-      link: cardLink
+      link: cardLink,
+    }),
+  })
+    .then((res) => {
+      return checkResponse(res);
     })
-  })
-   
-  .then((res) => {
-    return checkResponse(res);
-  })
-  .then((cardData) => {
-    placesList.prepend(
-      createCard(
-        cardData,
-        deleteCard,
-        addLike,
-        openCardImage
-      ))
-  })
-  .catch((err) => {
-    console.error('Ошибка создания карточки', err);
-  });
+    .then((cardData) => {
+      placesList.prepend(
+        createCard(cardData, deleteCard, addLike, openCardImage)
+      );
+    })
+    .catch((err) => {
+      console.error("Ошибка создания карточки", err);
+    })
+    .finally(() => {
+      submitButton.textContent = initialText;
+    });
   closeModal();
+}
+
+function updateAvatar(evt) {
+  const link = formElementAvatarEdit.elements["avatar"].value.trim();
+  const submitButton = formElementAvatarEdit.querySelector(".button__submit");
+  const initialText = submitButton.textContent;
+  submitButton.textContent = "Обновление...";
+  evt.preventDefault();
+  return fetch(`${apiConfig.url}/users/me/avatar`, {
+    method: "PATCH",
+    headers: apiConfig.headers,
+    body: JSON.stringify({
+      avatar: link,
+    }),
+  })
+    .then((res) => {
+      return checkResponse(res);
+    })
+    .then((data) => {
+      console.log("прилет из промиса аватара", data);
+      avatar.src = data.avatar;
+      avatar.alt = data.name;
+      closeModal();
+    })
+    .catch((err) => {
+      console.error("Ошибка обновления аватарки", err);
+    })
+    .finally(() => {
+      submitButton.textContent = initialText;
+    });
 }
 
 function openCardImage(cardData) {
@@ -128,84 +205,8 @@ function renderCard(cardsData, placesList) {
 }
 
 enableValidation(validationConfig);
-// --------------------------------api-------------------------------- //
 
-const apiConfig = {
-  url: "https://nomoreparties.co/v1/wff-cohort-41",
-  headers: {
-    "Content-Type": "application/json",
-    authorization: "7564c66a-aa2b-404d-99e6-765f18d0ed8a",
-  },
-};
 
-const checkResponse = (res) => {
-  if (res.ok) {
-    return res.json();
-  }
-  return Promise.reject(console.log(`Ошибка: ${res.status}`));
-};
 
-const getUserInfoApi = () => {
-  return fetch(`${apiConfig.url}/users/me`, {
-    headers: apiConfig.headers,
-  })
-    .then((res) => {
-      return checkResponse(res);
-    })
-    .then((data) => {
-      updateProfile(data);
-      return data;
-    })
-    .catch((error) => {
-      console.error("Ошибка при загрузке данных профиля", error);
-    });
-};
 
-const updateProfile = (data) => {
-  if (nameInput) nameInput.textContent = data.name;
-  if (jobInput) jobInput.textContent = data.about;
-  if (avatar.src) avatar.src = data.avatar;
-  if (avatar.alt) avatar.alt = data.name;
-};
 
-const getInitialCardsApi = () => {
-  return fetch(`${apiConfig.url}/cards`, {
-    headers: apiConfig.headers,
-  })
-    .then((res) => {
-      return checkResponse(res);
-    })
-    .catch((error) => {
-      console.error("Ошибка загрузки карточек", error);
-    });
-};
-
-const setUserInfoApi = (name, about) => {
-  return fetch(`${apiConfig.url}/users/me`, {
-    method: 'PATCH',
-    headers: apiConfig.headers,
-    body: JSON.stringify({
-      name: name,
-      about: about
-    })
-  })
-  .then(checkResponse)
-  .catch(error => {
-    console.error('Ошибка обновления информации профиля', error);
-  })
-}
-
-let userId;
-
-Promise.all([getUserInfoApi(), getInitialCardsApi()])
-.then(([userData, cardsData]) => {
-  userId = userData._id;
-  setUserId(userId);
-  console.log("данные пользователя и карточки", userData, cardsData);
-   renderCard(cardsData, placesList);
-})
-.catch((error) => {
-  console.error("Ошибка при загрузке данных", error);
-});
-
-export {apiConfig, checkResponse}

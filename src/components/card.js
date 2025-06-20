@@ -1,5 +1,5 @@
 
-import { apiConfig, checkResponse } from "../index.js";
+import { apiConfig, checkResponse } from "./api";
 const cardTemplate = document.querySelector("#card-template").content;
 
 let userId;
