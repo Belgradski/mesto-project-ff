@@ -44,11 +44,13 @@
         <form class="popup__form" name="edit-profile" novalidate>
           <input id="input-name" type="text" name="name" class="popup__input popup__input_type_name" placeholder="Имя"
             minlength="2" maxlength="40" required
-            data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы.">
+            pattern="^[а-яА-Яa-zA-Z\s\-]+$"
+            data-error-message="Вы пропустили это поле">
           <span id="input-name-error" class="popup__error"></span>
           <input id="input-job" type="text" name="description" class="popup__input popup__input_type_description"
             placeholder="Занятие" minlength="2" maxlength="200" required
-            data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
+            pattern="^[а-яА-Яa-zA-Z\s\-]+$"
+            data-error-message="Вы пропустили это поле">
           <span id="input-job-error" class="popup__error"></span>
           <button type="submit" class="button popup__button button__submit">Сохранить</button>
         </form>
@@ -61,7 +63,8 @@
         <form class="popup__form" name="new-place" novalidate>
           <input id="input-name" type="text" name="place-name" class="popup__input popup__input_type_card-name"
             placeholder="Название" minlength="2" maxlength="30" required
-            data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы.">
+            pattern="^[а-яА-Яa-zA-Z\s\-]+$"
+            data-error-message="Вы пропустили это поле">
           <span id="input-name-error" class="popup__error"></span>
           <input id="input-link" type="url" name="link" class="popup__input popup__input_type_url"
             placeholder="Ссылка на картинку" required>
@@ -84,7 +87,7 @@
       <h3 class="popup__title">Обновить аватар</h3>
       <form class="popup__form" name="avatar-edit" novalidate>
         <input id="input-avatar" class="popup__input popup__input_type_url" type="url" name="avatar"
-          placeholder="Ссылка на аватар">
+          placeholder="Ссылка на аватар" required>
         <span id="input-avatar-error" class="popup__error"></span>
         <button type="submit" class="button popup__button button__submit" disabled>Сохранить</button>
       </form>
@@ -97,9 +100,10 @@
       <button type="button" class="card__delete-button"></button>
       <div class="card__description">
         <h2 class="card__title"></h2>
-        <div class="card__like-group"></div>
+        <div class="card__like-group">
         <button type="button" class="card__like-button"></button>
         <span class="card__like-counter"></span>
+      </div>
       </div>
     </li>
   </template>

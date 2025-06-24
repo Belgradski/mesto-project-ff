@@ -1,12 +1,6 @@
-
-import { apiConfig, checkResponse } from "./api";
+import { apiConfig, checkResponseApi, deleteCardApi, toggleLike } from "./api";
+import { userId } from "../index.js";
 const cardTemplate = document.querySelector("#card-template").content;
-
-let userId;
-
-export function setUserId(id) {
-  userId = id;
-}
 
 function createCard(cardData, deleteCallback, likeCallback, openCardImage) {
   const card = cardTemplate.querySelector(".card").cloneNode(true);
@@ -26,7 +20,7 @@ function createCard(cardData, deleteCallback, likeCallback, openCardImage) {
   }
 
   if (cardData.likes && cardData.likes.some((like) => like._id === userId)) {
-    cardLikeButton.classList.add('card__like-button_is-active');
+    cardLikeButton.classList.add("card__like-button_is-active");
   }
 
   cardImage.addEventListener("click", () => {
@@ -45,38 +39,14 @@ function createCard(cardData, deleteCallback, likeCallback, openCardImage) {
 
 function addLike(card, cardId) {
   const likeButton = card.querySelector(".card__like-button");
-  const likeCounter = card.querySelector(".card__like-counter")
-  
-  const isLiked = likeButton.classList.contains('card__like-button_is-active');
-  const method = isLiked ? 'DELETE' : 'PUT'; 
-  
-return fetch(`${apiConfig.url}/cards/likes/${cardId}`, {
-  method: method,
-  headers: apiConfig.headers
-})
-  .then((res) => {return checkResponse(res)})
-  .then((updateCard) => {
-    likeCounter.textContent = updateCard.likes.length;
-    likeButton.classList.toggle('card__like-button_is-active')
-  })
-  .catch((err) => {
-    console.error('Ошибка лайка', err);
-  })
+  const likeCounter = card.querySelector(".card__like-counter");
+  const isLiked = likeButton.classList.contains("card__like-button_is-active");
+  const method = isLiked ? "DELETE" : "PUT";
+  toggleLike(method, cardId, likeButton, likeCounter);
 }
 
 function deleteCard(card, cardId) {
-  return fetch(`${apiConfig.url}/cards/${cardId}`, {
-    method: 'DELETE',
-    headers: apiConfig.headers
-  })
-  .then((res) => {return checkResponse(res)})
-  .then(() => {
-    card.remove();
-  })
-  .catch((err) => {
-    console.error('Ошибка удаления карточки', err)
-  })
-  
+  deleteCardApi(card, cardId);
 }
 
-export { createCard, deleteCard, addLike};
+export { createCard, deleteCard, addLike };

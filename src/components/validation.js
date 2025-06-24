@@ -1,21 +1,21 @@
-const regex = /^[а-яА-Яa-zA-Z\s\-]+$/;
+const input = document.querySelector("#input-name");
+const regex = input.pattern;
 
-const validationConfig = {
-  formSelector: ".popup__form",
-  inputSelector: ".popup__input",
-  submitButtonSelector: ".popup__button",
-  inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: "popup__input_type_error",
-  errorClass: "popup__error_visible",
+const disableButtonSubmit = (buttonElement, config) => {
+  buttonElement.disabled = true;
+  buttonElement.classList.add(config.inactiveButtonClass);
+};
+
+const enableButtonSubmit = (buttonElement, config) => {
+  buttonElement.disabled = false;
+  buttonElement.classList.remove(config.inactiveButtonClass);
 };
 
 const toggleButtonState = (inputList, buttonElement, config) => {
   if (hasInvalidInput(inputList)) {
-    buttonElement.disabled = true;
-    buttonElement.classList.add(config.inactiveButtonClass);
+    disableButtonSubmit(buttonElement, config);
   } else {
-    buttonElement.disabled = false;
-    buttonElement.classList.remove(config.inactiveButtonClass);
+    enableButtonSubmit(buttonElement, config);
   }
 };
 
@@ -73,7 +73,6 @@ const setEventListener = (formElement, config) => {
   toggleButtonState(inputList, buttonElement, config);
   inputList.forEach((inputElement) => {
     inputElement.addEventListener("input", function () {
-      hideInputError(formElement, inputElement, config);
       isValid(formElement, inputElement, config);
       toggleButtonState(inputList, buttonElement, config);
     });
@@ -83,9 +82,6 @@ const setEventListener = (formElement, config) => {
 const enableValidation = (config) => {
   const formList = Array.from(document.querySelectorAll(config.formSelector));
   formList.forEach((formElement) => {
-    formElement.addEventListener("submit", (evt) => {
-      evt.preventDefault();
-    });
     setEventListener(formElement, config);
   });
 };
@@ -100,14 +96,8 @@ const clearValidation = (formElement, config) => {
     hideInputError(formElement, inputElement, config);
   });
   if (buttonElement) {
-    buttonElement.disabled = true;
-    buttonElement.classList.add(config.inactiveButtonClass);
+    disableButtonSubmit(buttonElement, config);
   }
 };
 
-export {
-  enableValidation,
-  clearValidation,
-  setEventListener,
-  validationConfig,
-};
+export { enableValidation, clearValidation, setEventListener };

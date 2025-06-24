@@ -1,23 +1,14 @@
 import "./index.css";
+import { createCard, deleteCard, addLike } from "./components/card.js";
+import { openModal, closeModal } from "./components/modal.js";
+import { enableValidation, clearValidation } from "./components/validation.js";
+
 import {
-  createCard,
-  deleteCard,
-  addLike,
-  setUserId,
-} from "./components/card.js";
-import { openModal, closeModal, resetForm } from "./components/modal.js";
-import {
-  enableValidation,
-  clearValidation,
-  validationConfig,
-} from "./components/validation.js";
-import { data } from "autoprefixer";
-import {
-  apiConfig,
-  checkResponse,
   getUserInfoApi,
   getInitialCardsApi,
   setUserInfoApi,
+  addCardApi,
+  updateAvatarApi,
 } from "./components/api.js";
 
 const profileEditButton = document.querySelector(".profile__edit-button");
@@ -37,7 +28,20 @@ const formElementEditProfile = document.forms["edit-profile"];
 const formElementNewPlace = document.forms["new-place"];
 const formElementAvatarEdit = document.forms["avatar-edit"];
 
-let userId;
+export let userId = null;
+
+function setUserId(id) {
+  userId = id;
+}
+
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
 
 export const updateProfile = (data) => {
   if (nameInput) nameInput.textContent = data.name;
@@ -46,25 +50,37 @@ export const updateProfile = (data) => {
   if (avatar.alt) avatar.alt = data.name;
 };
 
-
 Promise.all([getUserInfoApi(), getInitialCardsApi()])
   .then(([userData, cardsData]) => {
-    userId = userData._id;
-    setUserId(userId);
+    setUserId(userData._id);
+    updateProfile(userData);
     renderCard(cardsData, placesList);
   })
   .catch((error) => {
     console.error("Ошибка при загрузке данных", error);
   });
 
-
 document.querySelectorAll(".popup").forEach((popup) => {
   popup.classList.add("popup_is-animated");
+  const closeButton = popup.querySelector(".popup__close");
+  if (closeButton) {
+    closeButton.addEventListener("click", () => {
+      closeModal(popup);
+    });
+  }
+  document.querySelectorAll(".popup").forEach((popup) => {
+    popup.addEventListener("click", (evt) => {
+      if (evt.target === popup) {
+        closeModal(popup);
+      }
+    });
+  });
 });
 
 profileImage.addEventListener("click", () => {
-  clearValidation(formElementAvatarEdit, validationConfig);
   openModal(popupTypeAvatar);
+  resetForm(popupTypeAvatar);
+  clearValidation(formElementAvatarEdit, validationConfig);
 });
 
 profileEditButton.addEventListener("click", () => {
@@ -75,71 +91,58 @@ profileEditButton.addEventListener("click", () => {
 });
 
 profileAddButton.addEventListener("click", () => {
-  clearValidation(formElementNewPlace, validationConfig);
   openModal(popupTypeNewCard);
+  resetForm(popupTypeNewCard);
+  clearValidation(formElementNewPlace, validationConfig);
 });
 
-document.querySelectorAll(".popup__close").forEach((closeButton) => {
-  closeButton.addEventListener("click", closeModal);
-});
-
-document.querySelectorAll(".popup").forEach((popup) => {
-  popup.addEventListener("click", (evt) => {
-    if (evt.target === popup) {
-      closeModal();
-    }
-  });
-});
+const renderPreloader = (evt, loading, displayText) => {
+  const submitButton = evt.target.querySelector(".button__submit");
+  if (!submitButton) return;
+  if (!submitButton.dataset.initialText) {
+    submitButton.dataset.initialText = submitButton.textContent;
+  }
+  submitButton.textContent = loading
+    ? displayText
+    : submitButton.dataset.initialText;
+  submitButton.disabled = loading;
+};
 
 formElementEditProfile.addEventListener("submit", (evt) => {
   evt.preventDefault();
-  const submitButton = formElementEditProfile.querySelector(".button__submit");
-  const initialText = submitButton.textContent;
-  submitButton.textContent = "Сохранение...";
   const name = formElementEditProfile.name.value;
   const about = formElementEditProfile.description.value;
+  renderPreloader(evt, true, "Сохранение ...");
   setUserInfoApi(name, about)
     .then((updateData) => {
       updateProfile(updateData);
       console.log("данные обновлены", updateData);
-      closeModal();
     })
     .catch((error) => {
       console.error("ошибка", error);
     })
     .finally(() => {
-      submitButton.textContent = initialText;
+      renderPreloader(evt, false);
     });
-  getUserInfoApi();
+  closeModal(popupTypeEdit);
 });
 
 formElementNewPlace.addEventListener("submit", (evt) => {
   addCard(evt);
+  closeModal(popupTypeNewCard);
 });
 
 formElementAvatarEdit.addEventListener("submit", (evt) => {
   updateAvatar(evt);
+  closeModal(popupTypeAvatar);
 });
 
 function addCard(evt) {
   evt.preventDefault();
-  const submitButton = formElementNewPlace.querySelector(".button__submit");
-  const initialText = submitButton.textContent;
-  submitButton.textContent = "Создание...";
-
   const cardPlaceName = formElementNewPlace.elements["place-name"].value;
   const cardLink = formElementNewPlace.elements["link"].value;
-  fetch(`${apiConfig.url}/cards`, {
-    method: "POST",
-    headers: apiConfig.headers,
-    body: JSON.stringify({
-      name: cardPlaceName,
-      link: cardLink,
-    }),
-  })
-    .then((res) => {
-      return checkResponse(res);
-    })
+  renderPreloader(evt, true, "Создание...");
+  addCardApi(cardPlaceName, cardLink)
     .then((cardData) => {
       placesList.prepend(
         createCard(cardData, deleteCard, addLike, openCardImage)
@@ -149,38 +152,24 @@ function addCard(evt) {
       console.error("Ошибка создания карточки", err);
     })
     .finally(() => {
-      submitButton.textContent = initialText;
+      renderPreloader(evt, false);
     });
-  closeModal();
 }
 
 function updateAvatar(evt) {
   const link = formElementAvatarEdit.elements["avatar"].value.trim();
-  const submitButton = formElementAvatarEdit.querySelector(".button__submit");
-  const initialText = submitButton.textContent;
-  submitButton.textContent = "Обновление...";
   evt.preventDefault();
-  return fetch(`${apiConfig.url}/users/me/avatar`, {
-    method: "PATCH",
-    headers: apiConfig.headers,
-    body: JSON.stringify({
-      avatar: link,
-    }),
-  })
-    .then((res) => {
-      return checkResponse(res);
-    })
+  renderPreloader(evt, true, "Обновление...");
+  updateAvatarApi(link)
     .then((data) => {
-      console.log("прилет из промиса аватара", data);
       avatar.src = data.avatar;
       avatar.alt = data.name;
-      closeModal();
     })
     .catch((err) => {
       console.error("Ошибка обновления аватарки", err);
     })
     .finally(() => {
-      submitButton.textContent = initialText;
+      renderPreloader(evt, false);
     });
 }
 
@@ -204,9 +193,9 @@ function renderCard(cardsData, placesList) {
   });
 }
 
+function resetForm(formElement) {
+  const form = formElement.querySelector(".popup__form");
+  form.reset();
+}
+
 enableValidation(validationConfig);
-
-
-
-
-

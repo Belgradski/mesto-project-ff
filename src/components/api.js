@@ -1,4 +1,3 @@
-import { updateProfile } from "../index.js";
 
 export const apiConfig = {
   url: "https://nomoreparties.co/v1/wff-cohort-41",
@@ -8,7 +7,7 @@ export const apiConfig = {
   },
 };
 
-export const checkResponse = (res) => {
+export const checkResponseApi = (res) => {
   if (res.ok) {
     return res.json();
   }
@@ -20,16 +19,8 @@ export const getUserInfoApi = () => {
     headers: apiConfig.headers,
   })
     .then((res) => {
-      return checkResponse(res);
+      return checkResponseApi(res);
     })
-    .then((data) => {
-      updateProfile(data);
-      return data;
-    })
-    .catch((error) => {
-      console.error("Ошибка при загрузке данных профиля", error);
-      throw error;
-    });
 };
 
 export const getInitialCardsApi = () => {
@@ -37,11 +28,8 @@ export const getInitialCardsApi = () => {
     headers: apiConfig.headers,
   })
     .then((res) => {
-      return checkResponse(res);
+      return checkResponseApi(res);
     })
-    .catch((error) => {
-      console.error("Ошибка загрузки карточек", error);
-    });
 };
 
 export const setUserInfoApi = (name, about) => {
@@ -53,8 +41,56 @@ export const setUserInfoApi = (name, about) => {
       about: about,
     }),
   })
-    .then(checkResponse)
-    .catch((error) => {
-      console.error("Ошибка обновления информации профиля", error);
-    });
+    .then(checkResponseApi)
 };
+
+export const addCardApi = (cardPlaceName, cardLink) => {
+
+  return fetch(`${apiConfig.url}/cards`, {
+    method: "POST",
+    headers: apiConfig.headers,
+    body: JSON.stringify({
+      name: cardPlaceName,
+      link: cardLink,
+    }),
+  })
+    .then((res) => {
+      return checkResponseApi(res);
+    })   
+}
+
+export const updateAvatarApi = (link) => {
+  return fetch(`${apiConfig.url}/users/me/avatar`, {
+    method: "PATCH",
+    headers: apiConfig.headers,
+    body: JSON.stringify({
+      avatar: link,
+    }),
+  })
+    .then((res) => {
+      return checkResponseApi(res);
+    })
+}
+
+export const deleteCardApi = (card, cardId) => {
+  return fetch(`${apiConfig.url}/cards/${cardId}`, {
+    method: 'DELETE',
+    headers: apiConfig.headers
+  })
+  .then((res) => {return checkResponseApi(res)})
+  .then(() => {
+    card.remove();
+  })
+}
+
+export const toggleLike = (method, cardId, likeButton, likeCounter) => {
+  return fetch(`${apiConfig.url}/cards/likes/${cardId}`, {
+    method: method,
+    headers: apiConfig.headers
+  })
+    .then((res) => {return checkResponseApi(res)})
+    .then((updateCard) => {
+      likeCounter.textContent = updateCard.likes.length;
+      likeButton.classList.toggle('card__like-button_is-active')
+    }) 
+}

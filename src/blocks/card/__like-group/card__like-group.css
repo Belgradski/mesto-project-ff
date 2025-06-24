@@ -1,0 +1,6 @@
+.card__like-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3px;
+}
