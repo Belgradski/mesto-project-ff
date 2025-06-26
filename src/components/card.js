@@ -1,8 +1,14 @@
-import { apiConfig, checkResponseApi, deleteCardApi, toggleLike } from "./api";
-import { userId } from "../index.js";
 const cardTemplate = document.querySelector("#card-template").content;
 
-function createCard(cardData, deleteCallback, likeCallback, openCardImage) {
+function createCard(
+  cardData,
+  deleteCallback,
+  likeCallback,
+  openCardImage,
+  userId,
+  deleteCardApi,
+  toggleLikeApi
+) {
   const card = cardTemplate.querySelector(".card").cloneNode(true);
   const cardImage = card.querySelector(".card__image");
   const cardTitle = card.querySelector(".card__title");
@@ -28,25 +34,31 @@ function createCard(cardData, deleteCallback, likeCallback, openCardImage) {
   });
 
   cardDeleteButton.addEventListener("click", () => {
-    deleteCallback(card, cardData._id);
+    deleteCallback(card, cardData._id, deleteCardApi);
   });
   cardLikeButton.addEventListener("click", () => {
-    likeCallback(card, cardData._id);
+    likeCallback(card, cardData._id, toggleLikeApi);
   });
-
   return card;
 }
 
-function addLike(card, cardId) {
+function addLike(card, cardId, toggleLikeApi) {
   const likeButton = card.querySelector(".card__like-button");
   const likeCounter = card.querySelector(".card__like-counter");
   const isLiked = likeButton.classList.contains("card__like-button_is-active");
   const method = isLiked ? "DELETE" : "PUT";
-  toggleLike(method, cardId, likeButton, likeCounter);
+  toggleLikeApi(method, cardId, likeButton, likeCounter)
+    .then((updateCard) => {
+      likeCounter.textContent = updateCard.likes.length;
+      likeButton.classList.toggle("card__like-button_is-active");
+    })
+    .catch((err) => console.error("Ошибка счетчика и постановки лайка", err));
 }
 
-function deleteCard(card, cardId) {
-  deleteCardApi(card, cardId);
+function deleteCard(card, cardId, deleteCardApi) {
+  deleteCardApi(card, cardId)
+    .then(() => card.remove())
+    .catch((err) => console.error("Ошибка удаления карточки", err));
 }
 
 export { createCard, deleteCard, addLike };

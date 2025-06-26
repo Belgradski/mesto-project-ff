@@ -1,15 +1,16 @@
 import "./index.css";
-import { createCard, deleteCard, addLike } from "./components/card.js";
-import { openModal, closeModal } from "./components/modal.js";
-import { enableValidation, clearValidation } from "./components/validation.js";
-
 import {
   getUserInfoApi,
   getInitialCardsApi,
   setUserInfoApi,
   addCardApi,
   updateAvatarApi,
+  deleteCardApi,
+  toggleLikeApi,
 } from "./components/api.js";
+import { createCard, deleteCard, addLike } from "./components/card.js";
+import { openModal, closeModal } from "./components/modal.js";
+import { enableValidation, clearValidation } from "./components/validation.js";
 
 const profileEditButton = document.querySelector(".profile__edit-button");
 const popupTypeEdit = document.querySelector(".popup_type_edit");
@@ -54,7 +55,7 @@ Promise.all([getUserInfoApi(), getInitialCardsApi()])
   .then(([userData, cardsData]) => {
     setUserId(userData._id);
     updateProfile(userData);
-    renderCard(cardsData, placesList);
+    renderCard(cardsData, placesList, userData._id);
   })
   .catch((error) => {
     console.error("Ошибка при загрузке данных", error);
@@ -62,19 +63,17 @@ Promise.all([getUserInfoApi(), getInitialCardsApi()])
 
 document.querySelectorAll(".popup").forEach((popup) => {
   popup.classList.add("popup_is-animated");
+  popup.addEventListener("click", (evt) => {
+    if (evt.target === popup) {
+      closeModal(popup);
+    }
+  });
   const closeButton = popup.querySelector(".popup__close");
   if (closeButton) {
     closeButton.addEventListener("click", () => {
       closeModal(popup);
     });
   }
-  document.querySelectorAll(".popup").forEach((popup) => {
-    popup.addEventListener("click", (evt) => {
-      if (evt.target === popup) {
-        closeModal(popup);
-      }
-    });
-  });
 });
 
 profileImage.addEventListener("click", () => {
@@ -116,7 +115,7 @@ formElementEditProfile.addEventListener("submit", (evt) => {
   setUserInfoApi(name, about)
     .then((updateData) => {
       updateProfile(updateData);
-      console.log("данные обновлены", updateData);
+      closeModal(popupTypeEdit);
     })
     .catch((error) => {
       console.error("ошибка", error);
@@ -124,30 +123,37 @@ formElementEditProfile.addEventListener("submit", (evt) => {
     .finally(() => {
       renderPreloader(evt, false);
     });
-  closeModal(popupTypeEdit);
 });
 
 formElementNewPlace.addEventListener("submit", (evt) => {
-  addCard(evt);
-  closeModal(popupTypeNewCard);
+  addCard(evt, userId);
 });
 
 formElementAvatarEdit.addEventListener("submit", (evt) => {
   updateAvatar(evt);
-  closeModal(popupTypeAvatar);
 });
 
-function addCard(evt) {
+function addCard(evt, userId) {
   evt.preventDefault();
   const cardPlaceName = formElementNewPlace.elements["place-name"].value;
   const cardLink = formElementNewPlace.elements["link"].value;
   renderPreloader(evt, true, "Создание...");
-  addCardApi(cardPlaceName, cardLink)
+  addCardApi(cardPlaceName, cardLink, userId)
     .then((cardData) => {
       placesList.prepend(
-        createCard(cardData, deleteCard, addLike, openCardImage)
+        createCard(
+          cardData,
+          deleteCard,
+          addLike,
+          openCardImage,
+          userId,
+          deleteCardApi,
+          toggleLikeApi
+        )
       );
+      closeModal(popupTypeNewCard);
     })
+
     .catch((err) => {
       console.error("Ошибка создания карточки", err);
     })
@@ -164,6 +170,7 @@ function updateAvatar(evt) {
     .then((data) => {
       avatar.src = data.avatar;
       avatar.alt = data.name;
+      closeModal(popupTypeAvatar);
     })
     .catch((err) => {
       console.error("Ошибка обновления аватарки", err);
@@ -180,14 +187,17 @@ function openCardImage(cardData) {
   openModal(imagePopup);
 }
 
-function renderCard(cardsData, placesList) {
+function renderCard(cardsData, placesList, userId) {
   placesList.innerHTML = "";
   cardsData.forEach((cardData) => {
     const card = createCard(
       cardData,
       cardData.owner._id === userId ? deleteCard : null,
       addLike,
-      openCardImage
+      openCardImage,
+      userId,
+      deleteCardApi,
+      toggleLikeApi
     );
     placesList.append(card);
   });

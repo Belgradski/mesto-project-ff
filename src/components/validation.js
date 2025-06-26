@@ -1,6 +1,3 @@
-const input = document.querySelector("#input-name");
-const regex = input.pattern;
-
 const disableButtonSubmit = (buttonElement, config) => {
   buttonElement.disabled = true;
   buttonElement.classList.add(config.inactiveButtonClass);
@@ -22,7 +19,7 @@ const toggleButtonState = (inputList, buttonElement, config) => {
 const hasInvalidInput = (inputList) => {
   return inputList.some((inputElement) => {
     if (inputElement.id === "input-name") {
-      return !inputElement.value.match(regex);
+      return inputElement.validity.patternMismatch;
     }
     return !inputElement.validity.valid;
   });
@@ -44,12 +41,13 @@ const hideInputError = (formElement, inputElement, config) => {
 
 const isValid = (formElement, inputElement, config) => {
   if (inputElement.id === "input-name") {
-    if (!inputElement.value.match(regex)) {
+    if (inputElement.validity.patternMismatch) {
+      inputElement.setCustomValidity(inputElement.dataset.errorMessage);
       const message = inputElement.dataset.errorMessage;
       showInputError(formElement, inputElement, message, config);
       return false;
     }
-
+    inputElement.setCustomValidity("");
     hideInputError(formElement, inputElement, config);
   }
 

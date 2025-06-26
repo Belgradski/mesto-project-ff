@@ -1,5 +1,4 @@
-
-export const apiConfig = {
+const apiConfig = {
   url: "https://nomoreparties.co/v1/wff-cohort-41",
   headers: {
     "Content-Type": "application/json",
@@ -17,19 +16,13 @@ export const checkResponseApi = (res) => {
 export const getUserInfoApi = () => {
   return fetch(`${apiConfig.url}/users/me`, {
     headers: apiConfig.headers,
-  })
-    .then((res) => {
-      return checkResponseApi(res);
-    })
+  }).then((res) => checkResponseApi(res));
 };
 
 export const getInitialCardsApi = () => {
   return fetch(`${apiConfig.url}/cards`, {
     headers: apiConfig.headers,
-  })
-    .then((res) => {
-      return checkResponseApi(res);
-    })
+  }).then((res) => checkResponseApi(res));
 };
 
 export const setUserInfoApi = (name, about) => {
@@ -40,12 +33,10 @@ export const setUserInfoApi = (name, about) => {
       name: name,
       about: about,
     }),
-  })
-    .then(checkResponseApi)
+  }).then((res) => checkResponseApi(res));
 };
 
-export const addCardApi = (cardPlaceName, cardLink) => {
-
+export const addCardApi = (cardPlaceName, cardLink, userId) => {
   return fetch(`${apiConfig.url}/cards`, {
     method: "POST",
     headers: apiConfig.headers,
@@ -53,11 +44,8 @@ export const addCardApi = (cardPlaceName, cardLink) => {
       name: cardPlaceName,
       link: cardLink,
     }),
-  })
-    .then((res) => {
-      return checkResponseApi(res);
-    })   
-}
+  }).then((res) => checkResponseApi(res));
+};
 
 export const updateAvatarApi = (link) => {
   return fetch(`${apiConfig.url}/users/me/avatar`, {
@@ -66,31 +54,19 @@ export const updateAvatarApi = (link) => {
     body: JSON.stringify({
       avatar: link,
     }),
-  })
-    .then((res) => {
-      return checkResponseApi(res);
-    })
-}
+  }).then((res) => checkResponseApi(res));
+};
 
 export const deleteCardApi = (card, cardId) => {
   return fetch(`${apiConfig.url}/cards/${cardId}`, {
-    method: 'DELETE',
-    headers: apiConfig.headers
-  })
-  .then((res) => {return checkResponseApi(res)})
-  .then(() => {
-    card.remove();
-  })
-}
+    method: "DELETE",
+    headers: apiConfig.headers,
+  }).then((res) => checkResponseApi(res));
+};
 
-export const toggleLike = (method, cardId, likeButton, likeCounter) => {
+export const toggleLikeApi = (method, cardId, likeButton, likeCounter) => {
   return fetch(`${apiConfig.url}/cards/likes/${cardId}`, {
     method: method,
-    headers: apiConfig.headers
-  })
-    .then((res) => {return checkResponseApi(res)})
-    .then((updateCard) => {
-      likeCounter.textContent = updateCard.likes.length;
-      likeButton.classList.toggle('card__like-button_is-active')
-    }) 
-}
+    headers: apiConfig.headers,
+  }).then((res) => checkResponseApi(res));
+};
