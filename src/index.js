@@ -29,7 +29,7 @@ const formElementEditProfile = document.forms["edit-profile"];
 const formElementNewPlace = document.forms["new-place"];
 const formElementAvatarEdit = document.forms["avatar-edit"];
 
-export let userId = null;
+let userId = null;
 
 function setUserId(id) {
   userId = id;
@@ -44,7 +44,7 @@ const validationConfig = {
   errorClass: "popup__error_visible",
 };
 
-export const updateProfile = (data) => {
+const updateProfile = (data) => {
   if (nameInput) nameInput.textContent = data.name;
   if (jobInput) jobInput.textContent = data.about;
   if (avatar.src) avatar.src = data.avatar;

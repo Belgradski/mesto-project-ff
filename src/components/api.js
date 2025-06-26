@@ -6,7 +6,7 @@ const apiConfig = {
   },
 };
 
-export const checkResponseApi = (res) => {
+const checkResponseApi = (res) => {
   if (res.ok) {
     return res.json();
   }

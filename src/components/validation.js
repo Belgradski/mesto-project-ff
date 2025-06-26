@@ -77,14 +77,14 @@ const setEventListener = (formElement, config) => {
   });
 };
 
-const enableValidation = (config) => {
+export const enableValidation = (config) => {
   const formList = Array.from(document.querySelectorAll(config.formSelector));
   formList.forEach((formElement) => {
     setEventListener(formElement, config);
   });
 };
 
-const clearValidation = (formElement, config) => {
+export const clearValidation = (formElement, config) => {
   const inputList = Array.from(
     formElement.querySelectorAll(config.inputSelector)
   );
@@ -98,4 +98,3 @@ const clearValidation = (formElement, config) => {
   }
 };
 
-export { enableValidation, clearValidation, setEventListener };

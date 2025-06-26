@@ -1,9 +1,9 @@
-function openModal(modal) {
+export function openModal(modal) {
   modal.classList.add("popup_is-opened");
   document.addEventListener("keydown", closeByEscape);
 }
 
-function closeModal(modal) {
+export function closeModal(modal) {
   if (!modal) return;
 
   modal.classList.remove("popup_is-opened");
@@ -17,4 +17,4 @@ function closeByEscape(evt) {
   }
 }
 
-export { openModal, closeModal };
+

@@ -1,6 +1,6 @@
 const cardTemplate = document.querySelector("#card-template").content;
 
-function createCard(
+export function createCard(
   cardData,
   deleteCallback,
   likeCallback,
@@ -42,7 +42,7 @@ function createCard(
   return card;
 }
 
-function addLike(card, cardId, toggleLikeApi) {
+export function addLike(card, cardId, toggleLikeApi) {
   const likeButton = card.querySelector(".card__like-button");
   const likeCounter = card.querySelector(".card__like-counter");
   const isLiked = likeButton.classList.contains("card__like-button_is-active");
@@ -55,10 +55,10 @@ function addLike(card, cardId, toggleLikeApi) {
     .catch((err) => console.error("Ошибка счетчика и постановки лайка", err));
 }
 
-function deleteCard(card, cardId, deleteCardApi) {
+export function deleteCard(card, cardId, deleteCardApi) {
   deleteCardApi(card, cardId)
     .then(() => card.remove())
     .catch((err) => console.error("Ошибка удаления карточки", err));
 }
 
-export { createCard, deleteCard, addLike };
+
